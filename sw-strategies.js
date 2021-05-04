@@ -44,6 +44,33 @@ self.addEventListener('activate', function (event) {
   return self.clients.claim()
 })
 
+// self.addEventListener('fetch', event => {
+//   event.respondWith(
+//     caches.match(event.request)
+//       .then(response => {
+//         if (response) {
+//           return response
+//         } else {
+//           return fetch(event.request)
+//             .then(res => {
+//               return caches.open(CACHE_DYNAMIC_NAME)
+//                 .then(cache => {
+//                   cache.put(event.request.url, res.clone())
+//                   return res
+//                 })
+//             })
+//             .catch(err => {
+//               return caches.open(CACHE_STATIC_NAME)
+//                 .then(cache => {
+//                   return cache.match('/offline.html')
+//                 })
+//             })
+//         }
+//       })
+//   )
+// })
+
+// implementation of cache then network & dynamic cache
 self.addEventListener('fetch', event => {
   const url = 'https://httpbin.org/get'
 
@@ -58,7 +85,7 @@ self.addEventListener('fetch', event => {
             })
         })
     )
-  } else if (isInArray(event.request.url, STATIC_FILES)) {
+  } else if (new RegExp('\\b' + STATIC_FILES.join('\\b|\\b') + '\\b')) {
     event.respondWith(caches.match(event.request))
   } else {
     event.respondWith(
@@ -89,6 +116,39 @@ self.addEventListener('fetch', event => {
 
 })
 
-function isInArray(string, array) {
-  return array.includes(string)
-}
+// implementatio of network with Cache Fallback
+// self.addEventListener('fetch', event => {
+//   event.respondWith(
+//     fetch(event.request)
+//       .catch(err => {
+//         return caches.match(event.request)
+//       })
+//   )
+// })
+
+// implementatio of network with Cache Fallback with dynamic cache
+// self.addEventListener('fetch', event => {
+//   event.respondWith(
+//     fetch(event.request)
+//       .then(res => {
+//         return caches.open(CACHE_DYNAMIC_NAME)
+//           .then(cache => {
+//             cache.put(event.request.url, res.clone())
+//             return res
+//           })
+//       })
+//       .catch(err => {
+//         return caches.match(event.request)
+//       })
+//   )
+// })
+
+// implementatio of cache only strategy
+// self.addEventListener('fetch', event => {
+//   event.respondWith(caches.match(event.request))
+// })
+
+// implementatio of network only strategy
+// self.addEventListener('fetch', event => {
+//   fetch(event.request)
+// })
