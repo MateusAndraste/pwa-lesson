@@ -1,4 +1,4 @@
-const CACHE_STATIC_NAME = 'static-v9'
+const CACHE_STATIC_NAME = 'static-v10'
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/',
@@ -53,6 +53,7 @@ self.addEventListener('fetch', event => {
         .then(cache => {
           return fetch(event.request)
             .then(res => {
+              trimCache(CACHE_DYNAMIC_NAME, 5)
               cache.put(event.request, res.clone())
               return res
             })
@@ -71,6 +72,7 @@ self.addEventListener('fetch', event => {
               .then(res => {
                 return caches.open(CACHE_DYNAMIC_NAME)
                   .then(cache => {
+                    trimCache(CACHE_DYNAMIC_NAME, 5)
                     cache.put(event.request.url, res.clone())
                     return res
                   })
@@ -78,7 +80,7 @@ self.addEventListener('fetch', event => {
               .catch(err => {
                 return caches.open(CACHE_STATIC_NAME)
                   .then(cache => {
-                    if (event.request.url.indexOf('/help'))
+                    if (event.request.headers.get('accept').includes('text/html'))
                       return cache.match('/offline.html')
                   })
               })
@@ -91,4 +93,17 @@ self.addEventListener('fetch', event => {
 
 function isInArray(string, array) {
   return array.includes(string)
+}
+
+function trimCache(cacheName, maxItems) {
+  caches.open(cacheName)
+    .then(cache => {
+      return cache.keys()
+        .then(keys => {
+          if (keys.length > maxItems) {
+            cache.delete(keys[0])
+              .then(trimCache(cacheName, maxItems))
+          }
+        })
+    })
 }
