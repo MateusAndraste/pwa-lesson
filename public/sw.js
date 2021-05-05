@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js')
 importScripts('/src/js/utility.js')
 
-const CACHE_STATIC_NAME = 'static-v13'
+const CACHE_STATIC_NAME = 'static-v14'
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/',
@@ -97,7 +97,12 @@ self.addEventListener('fetch', event => {
         })
     )
   }
+})
 
+self.addEventListener('sync', event => {
+  console.log('[Service Worker] Background syncing', event)
+
+  
 })
 
 function isInArray (string, array) {

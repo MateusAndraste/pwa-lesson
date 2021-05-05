@@ -2,6 +2,9 @@ var shareImageButton = document.querySelector('#share-image-button');
 var createPostArea = document.querySelector('#create-post');
 var closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
 var sharedMomentsArea = document.querySelector('#shared-moments');
+const form = document.querySelector('form')
+const titleInput = document.querySelector('#title')
+const locationInput = document.querySelector('#location')
 
 function openCreatePostModal () {
   createPostArea.style.display = 'block';
@@ -117,4 +120,61 @@ if ('indexedDB' in window) {
         updateUI(data)
       }
     })
+}
+
+form.addEventListener('submit', event => {
+  event.preventDefault()
+
+  if (titleInput.nodeValue.trim() === '' || locationInput.value.trim() === '') {
+    alert('Please enter valid data!')
+    return
+  }
+
+  closeCreatePostModal()
+
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready
+      .then(sw => {
+        let post = {
+          id: new Date().toISOString(),
+          title: titleInput.value,
+          location: locationInput.value
+        }
+
+        writeData('sync-posts', post)
+          .then(() => {
+            return sw.sync.register('sync-new-post')
+          })
+          .then(() => {
+            const snackbarContainer = document.querySelector('#confirmation-toast')
+            const data = { message: 'Your post was saved for syncing!' }
+            snackbarContainer.MaterialSnackbar.showSnackbar(data)
+          })
+          .catch(err => {
+            console.error(err)
+          })
+      })
+  } else {
+    sendData()
+  }
+})
+
+function sendData() {
+  fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      id: new Date().toISOString(),
+      title: titleInput.value,
+      location: locationInput.value,
+      image: 'https://i.pinimg.com/originals/52/05/70/5205708ccde349c427315f625113eb1a.jpg'
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => {
+    console.log('Send data', res)
+    updateUI()
+  })
 }
