@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js')
 importScripts('/src/js/utility.js')
 
-const CACHE_STATIC_NAME = 'static-v14'
+const CACHE_STATIC_NAME = 'static-v15'
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/',
@@ -102,14 +102,46 @@ self.addEventListener('fetch', event => {
 self.addEventListener('sync', event => {
   console.log('[Service Worker] Background syncing', event)
 
-  
+  if (event.tag === 'sync-new-posts') {
+    console.log('[Service Worker] Syncing new Post')
+    event.waitUntil(
+      readAllData('sync-posts')
+        .then(data => {
+          for (const dt of data) {
+            fetch('https://testes-gerais-a5d94-default-rtdb.firebaseio.com/posts.json', {
+              method: 'POST',
+              body: JSON.stringify({
+                id: dt.id,
+                title: dt.title,
+                location: dt.location,
+                image: 'https://i.pinimg.com/originals/52/05/70/5205708ccde349c427315f625113eb1a.jpg'
+              }),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            })
+              .then(res => {
+                console.log('Send data', res)
+                if (res.ok) {
+                  deleteItemFromData('sync-posts', dt.id)
+                }
+              })
+              .catch(err => {
+                console.error('[Service Worker] Error while sending data', err)
+              })
+          }
+        })
+    )
+  }
+
 })
 
-function isInArray (string, array) {
+function isInArray(string, array) {
   return array.includes(string)
 }
 
-function trimCache (cacheName, maxItems) {
+function trimCache(cacheName, maxItems) {
   caches.open(cacheName)
     .then(cache => {
       return cache.keys()

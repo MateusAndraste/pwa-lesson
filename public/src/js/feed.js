@@ -6,7 +6,7 @@ const form = document.querySelector('form')
 const titleInput = document.querySelector('#title')
 const locationInput = document.querySelector('#location')
 
-function openCreatePostModal () {
+function openCreatePostModal() {
   createPostArea.style.display = 'block';
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -34,7 +34,7 @@ function openCreatePostModal () {
   // }
 }
 
-function closeCreatePostModal () {
+function closeCreatePostModal() {
   createPostArea.style.display = 'none';
 }
 
@@ -54,13 +54,13 @@ closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 //   }
 // }
 
-function clearCards () {
+function clearCards() {
   while (sharedMomentsArea.hasChildNodes()) {
-    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild())
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild)
   }
 }
 
-function createCard (data) {
+function createCard(data) {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
   var cardTitle = document.createElement('div');
@@ -87,7 +87,7 @@ function createCard (data) {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-function updateUI (data) {
+function updateUI(data) {
   clearCards()
   for (const post of data) {
     createCard(post)
@@ -125,7 +125,7 @@ if ('indexedDB' in window) {
 form.addEventListener('submit', event => {
   event.preventDefault()
 
-  if (titleInput.nodeValue.trim() === '' || locationInput.value.trim() === '') {
+  if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
     alert('Please enter valid data!')
     return
   }
@@ -143,7 +143,7 @@ form.addEventListener('submit', event => {
 
         writeData('sync-posts', post)
           .then(() => {
-            return sw.sync.register('sync-new-post')
+            return sw.sync.register('sync-new-posts')
           })
           .then(() => {
             const snackbarContainer = document.querySelector('#confirmation-toast')
@@ -173,8 +173,8 @@ function sendData() {
       'Accept': 'application/json'
     }
   })
-  .then(res => {
-    console.log('Send data', res)
-    updateUI()
-  })
+    .then(res => {
+      console.log('Send data', res)
+      updateUI()
+    })
 }
